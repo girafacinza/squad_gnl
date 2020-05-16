@@ -1,4 +1,4 @@
-	/* ************************************************************************** */
+/* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
@@ -21,43 +21,43 @@ static void		ft_strfree(char **str)
 	*str = 0;
 }
 
-int				ft_strcut (char **string, char **line, int posicaoDivisao)
+static int		ft_strcut(char **resto, char **line, int i_break)
 {
 	char	*temp;
 	int		counter;
 	int		counter2;
 
-	if (!(*line = malloc(sizeof(char) * (posicaoDivisao + 1))))
+	if (!(*line = malloc(sizeof(char) * (i_break + 1))))
 		return (-1);
 	counter = 0;
-	while (counter != posicaoDivisao)
+	while (counter != i_break)
 	{
-		(*line)[counter] = (*string)[counter];
+		(*line)[counter] = (*resto)[counter];
 		counter++;
 	}
 	(*line)[counter] = '\0';
-	if (ft_strlen(*string) - posicaoDivisao != 0)
+	if (ft_strlen(*resto) - i_break != 0)
 	{
-		if (!(temp = malloc(sizeof(char) * (ft_strlen(*string) - posicaoDivisao))))
-			return (-1);	
-		posicaoDivisao++;
+		if (!(temp = malloc(sizeof(char) * (ft_strlen(*resto) - i_break))))
+			return (-1);
+		i_break++;
 		counter2 = 0;
-		while ((*string)[posicaoDivisao])
+		while ((*resto)[i_break])
 		{
-			temp[counter2] = (*string)[posicaoDivisao];
-			posicaoDivisao++;
+			temp[counter2] = (*resto)[i_break];
+			i_break++;
 			counter2++;
 		}
 		temp[counter2] = '\0';
-		ft_strlcpy(*string, temp, ft_strlen(*string));
+		ft_strlcpy(*resto, temp, ft_strlen(*resto));
 		ft_strfree(&temp);
 		return (1);
 	}
-	ft_strfree (string);
+	ft_strfree(resto);
 	return (0);
 }
 
-int				ft_new_line(const char *str, int ret)
+static int		ft_new_line(const char *str, int ret)
 {
 	int i;
 
@@ -75,9 +75,9 @@ int				ft_new_line(const char *str, int ret)
 	return (-1);
 }
 
-char *ft_strconcat(char *str1, char *str2)
+static char		*ft_strconcat(char *str1, char *str2)
 {
-	int 	len;
+	int		len;
 	char	*concat;
 	int		cont;
 
@@ -108,21 +108,19 @@ char *ft_strconcat(char *str1, char *str2)
 	return (concat);
 }
 
-int	get_next_line(int fd, char **line)
+int				get_next_line(int fd, char **line)
 {
 	char		temp[BUFFER_SIZE + 1];
 	static int	ret;
-	static char	*resto;
+	static char	*resto[OPEN_MAX];
 	int			i;
 
 	if (line == 0 || fd < 0 || BUFFER_SIZE < 1 || read(fd, temp, 0) < 0)
 		return (-1);
-	while (1)
-	{
-		ret = read(fd, temp, BUFFER_SIZE);
-		temp[ret] = '\0';
-		resto = ft_strconcat(resto, temp);
-		if ((i = ft_new_line(resto, ret)) != -1)
-			return (ft_strcut(&resto, line, i));
-	}
+	ret = read(fd, temp, BUFFER_SIZE);
+	temp[ret] = '\0';
+	resto[fd] = ft_strconcat(resto[fd], temp);
+	if ((i = ft_new_line(resto[fd], ret)) != -1)
+		return (ft_strcut(&resto[fd], line, i));
+	return (get_next_line(fd, line));
 }

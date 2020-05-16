@@ -22,7 +22,7 @@ void			ft_bzero(void *b, size_t len)
 	while (i < len)
 	{
 		*str = 0;
-			i++;
+		i++;
 		str++;
 	}
 }
